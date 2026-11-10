@@ -6,7 +6,7 @@
 
 [Open the GitHub Pages entry](https://brunnojob.github.io/devrescue/) · [Open the hosted tool](https://log-sleuth-workbench.lovable.app)
 
-![DevRescue access screen](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/5b5ca9eb-edfc-448f-85e7-352d58c6bdfd/devrescue-access.png)
+
 
 
 
