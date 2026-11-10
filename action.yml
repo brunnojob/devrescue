@@ -1,0 +1,29 @@
+name: DevRescue
+description: Turn a local CI log into sanitized diagnostic evidence and a job summary.
+author: brunnojob
+branding:
+  icon: tool
+  color: green
+inputs:
+  log-path:
+    description: Path to a UTF-8 text log (maximum 2 MiB).
+    required: true
+  fail-on-findings:
+    description: Return a failure when a supported signature is detected.
+    default: 'false'
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+    - name: Analyze log
+      shell: bash
+      env:
+        DEVRESCUE_ACTION_PATH: ${{ github.action_path }}
+        DEVRESCUE_LOG_PATH: ${{ inputs.log-path }}
+        DEVRESCUE_FAIL: ${{ inputs.fail-on-findings }}
+      run: |
+        options=()
+        if [ "$DEVRESCUE_FAIL" = "true" ]; then options+=(--fail-on-findings); fi
+        node "$DEVRESCUE_ACTION_PATH/bin/devrescue.js" analyze "$DEVRESCUE_LOG_PATH" --markdown "${options[@]}"

@@ -1,0 +1,9 @@
+Installing dependencies...
+npm error ERESOLVE unable to resolve dependency tree
+src/api.ts(45,7): error TS2322: Type 'string' is not assignable to type 'number'.
+src/api.ts(45,7): error TS2322: Type 'string' is not assignable to type 'number'.
+Traceback (most recent call last):
+  File "service/main.py", line 12, in <module>
+    import requests
+ModuleNotFoundError: No module named 'requests'
+Error: listen EADDRINUSE: address already in use :::3000
