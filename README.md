@@ -96,15 +96,15 @@ The original build remains failed when it fails. DevRescue appends a sanitized M
 
 The root `index.html` imports the same `src/engine.js` as the CLI and Action. Serve the checkout over HTTP, for example `python -m http.server 8080`, then open localhost:8080. Paste/upload logs, inspect findings, compare incidents and export reports. Raw logs are not persisted. History is optional and local.
 
-A separate [Lovable prototype](https://lovable.dev/projects/a475c4c3-e179-407a-8108-a0544546ff72) helped shape the workbench. The repository version is canonical and shares the tested CLI engine.
+The full-stack [Lovable application](https://lovable.dev/projects/40c635c4-c8fc-4d94-82d8-338c46515291) now has per-user account sync. Its source is in [`apps/web`](apps/web), including the authenticated server functions, PostgreSQL adapter, isolated schema and migration/verification scripts. The static GitHub Pages workbench remains local-only.
 
-Optional Node API + Azure PostgreSQL schema: [setup and current connection status](docs/AZURE.md). **Azure is prepared, not connected.** The browser never receives database credentials. API routes have a dedicated service token and store derived sanitized reports only. The optional server uses `pg`; the CLI does not need it.
+See [Azure setup and current connection status](docs/AZURE.md). **Live Azure connectivity is not yet verified.** The full-stack app uses per-user sessions in httpOnly secure cookies, CSRF checks, and explicitly reviewed sanitized summaries. It never sends full logs to the database. The older `server/` service-token API remains a standalone single-owner prototype and is not used by the full-stack application.
 
 ## Sponsor useful maintenance
 
 [♥ Sponsor brunnodev](https://github.com/sponsors/brunnojob) to help fund maintained rules, reproducible fixtures and compatibility work. Suggested voluntary support: **$5/month** for individuals and **$10/month** for frequent users. These are suggestions, not configured GitHub tier claims or paid feature gates.
 
-The core remains MIT open source. Sponsorship is not a promise that every error can be fixed or that revenue is guaranteed. Team-hosted history, stronger language-aware patches and authenticated multi-user dashboards are future work, not shipped features.
+The core remains MIT open source. Sponsorship is not a promise that every error can be fixed or that revenue is guaranteed. Per-user history code is implemented in `apps/web`, pending verified Azure connectivity and deployment. Stronger language-aware source patches and production SaaS hardening remain future work.
 
 ## Quality and contribution
 
