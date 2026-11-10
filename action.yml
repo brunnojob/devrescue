@@ -1,22 +1,28 @@
 name: DevRescue
 description: Turn a local CI log into sanitized diagnostic evidence and a job summary.
 author: brunnojob
+
 branding:
   icon: tool
   color: green
+
 inputs:
   log-path:
     description: Path to a UTF-8 text log (maximum 2 MiB).
     required: true
   fail-on-findings:
     description: Return a failure when a supported signature is detected.
+    required: false
     default: 'false'
+
 runs:
   using: composite
   steps:
-    - uses: actions/setup-node@v4
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: '22'
+
     - name: Analyze log
       shell: bash
       env:
@@ -24,6 +30,49 @@ runs:
         DEVRESCUE_LOG_PATH: ${{ inputs.log-path }}
         DEVRESCUE_FAIL: ${{ inputs.fail-on-findings }}
       run: |
+        set -euo pipefail
+
+        case "$DEVRESCUE_FAIL" in
+          true|false) ;;
+          *)
+            echo "::error::fail-on-findings must be 'true' or 'false'."
+            exit 1
+            ;;
+        esac
+
+        if [[ -z "$DEVRESCUE_LOG_PATH" ]]; then
+          echo "::error::log-path is required."
+          exit 1
+        fi
+
+        log_path="$DEVRESCUE_LOG_PATH"
+        if [[ "$log_path" != /* ]]; then
+          log_path="$GITHUB_WORKSPACE/$log_path"
+        fi
+
+        if [[ ! -f "$log_path" || ! -r "$log_path" ]]; then
+          echo "::error::The log must be a readable regular file."
+          exit 1
+        fi
+
+        size_bytes=$(wc -c < "$log_path")
+        if (( size_bytes > 2097152 )); then
+          echo "::error::The log exceeds the maximum size of 2 MiB."
+          exit 1
+        fi
+
+        cli_path="$DEVRESCUE_ACTION_PATH/bin/devrescue.js"
+        if [[ ! -f "$cli_path" ]]; then
+          echo "::error::The release is missing bin/devrescue.js."
+          exit 1
+        fi
+
         options=()
-        if [ "$DEVRESCUE_FAIL" = "true" ]; then options+=(--fail-on-findings); fi
-        node "$DEVRESCUE_ACTION_PATH/bin/devrescue.js" analyze "$DEVRESCUE_LOG_PATH" --markdown "${options[@]}"
+        if [[ "$DEVRESCUE_FAIL" == 'true' ]]; then
+          options+=(--fail-on-findings)
+        fi
+
+        # Append only the CLI's sanitized Markdown output, never the raw log.
+        # pipefail preserves the analyzer's failure exit code when using tee.
+        node "$cli_path" analyze "$log_path" --markdown "${options[@]}" \
+          | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"
