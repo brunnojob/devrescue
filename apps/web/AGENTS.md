@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -27,6 +28,7 @@ use the editor.
   `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
+
 <!-- LOVABLE:END -->
 
 - Log analysis is a pure deterministic module (src/lib/analyzer.ts) with tests beside it; never add network calls or command execution there — keeps the tool offline and safe.
@@ -34,3 +36,8 @@ use the editor.
 - Synced reports are derived summaries built by src/lib/sync-report.ts and re-redacted server-side; never sync raw or full sanitized logs.
 - CI (.github/workflows/ci.yml) runs lint, tests and build on every push and PR; fix lint errors instead of suppressing them, and never weaken the analyzer's purity rule to silence one.
 - Report cap and lockout are enforced in single atomic SQL statements in src/lib/accounts.server.ts, tested against PGlite with the real schema — keeps them safe under concurrent requests.
+- GitHub Pages publishes only pages-site via its own workflow and opens the separately hosted TanStack tool — static hosting cannot execute secure sessions or PostgreSQL calls.
+- Hosted access uses an immutable GitHub identity, an atomic non-resettable trial start and server-verified sponsorship; connection keys are encrypted and OAuth completion is nonce- and session-bound — prevents browser-clock resets and cross-account grants.
+- Additional access tables use the separately reviewed db/devrescue-access.sql and deliberate migrate-access script; never edit or automatically rerun the installed base migration — preserves live data.
+- Language and appearance preferences share a root React provider; translate presentation only, never evidence or executable commands — keeps localization consistent without altering diagnostics.
+- Theme variations override semantic CSS tokens in the global stylesheet — keeps controls and all routes consistent.

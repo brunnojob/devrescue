@@ -8,8 +8,10 @@ import {
 import { z } from "zod";
 import { credentialsSchema, parseSyncReport } from "./sync-report";
 import { probeDb, withDb, type DbState } from "./db.server";
+import type { DbErrorKind } from "./db-diagnosis";
 import * as A from "./accounts.server";
 import { csrfFor } from "./crypto.server";
+import { requireAccess } from "./access.server";
 
 const cookie = () => getCookie(A.SESSION_COOKIE);
 const setSession = (token: string) =>
@@ -28,6 +30,8 @@ const fail = (e: unknown) => {
     "Report too large",
     "Report limit reached; delete old reports first",
     "Database not configured",
+    "Access setup pending",
+    "Trial ended or GitHub sponsorship not verified",
   ];
   if (!safe.includes(msg))
     console.error("devrescue: request failed", (e as { code?: string }).code ?? "");
@@ -42,6 +46,7 @@ export const getSyncStatus = createServerFn({ method: "GET" }).handler(
     db: DbState;
     missing: string[];
     detail?: string;
+    kind?: DbErrorKind;
     user: { email: string } | null;
     csrf: string | null;
   }> => {
@@ -52,6 +57,7 @@ export const getSyncStatus = createServerFn({ method: "GET" }).handler(
         db: probe.state,
         missing: probe.missing,
         ...(probe.detail ? { detail: probe.detail } : {}),
+        ...(probe.kind ? { kind: probe.kind } : {}),
         user: null,
         csrf: null,
       };
@@ -107,9 +113,11 @@ export const listRemoteReports = createServerFn({ method: "POST" })
     try {
       return {
         ok: true as const,
-        reports: await withDb(async (q) =>
-          A.listReports(q, (await A.requireUser(q, cookie(), data.csrf)).id),
-        ),
+        reports: await withDb(async (q) => {
+          const user = await A.requireUser(q, cookie(), data.csrf);
+          await requireAccess(q, user.id);
+          return A.listReports(q, user.id);
+        }),
       };
     } catch (e) {
       return fail(e);
@@ -124,9 +132,11 @@ export const uploadReport = createServerFn({ method: "POST" })
       const report = parseSyncReport(data.report);
       return {
         ok: true as const,
-        id: await withDb(async (q) =>
-          A.createReport(q, (await A.requireUser(q, cookie(), data.csrf)).id, report),
-        ),
+        id: await withDb(async (q) => {
+          const user = await A.requireUser(q, cookie(), data.csrf);
+          await requireAccess(q, user.id);
+          return A.createReport(q, user.id, report);
+        }),
       };
     } catch (e) {
       return fail(e);

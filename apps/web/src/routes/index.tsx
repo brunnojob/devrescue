@@ -1,5 +1,6 @@
+import { translate, usePreferences } from "@/lib/preferences";
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Shell } from "@/components/Shell";
 import {
   analyze,
@@ -12,6 +13,7 @@ import {
 } from "@/lib/analyzer";
 import { SAMPLES } from "@/lib/samples";
 import { RemoteSync } from "@/components/RemoteSync";
+import { AccessGate } from "@/components/AccessGate";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -69,11 +71,17 @@ const Btn = (p: React.ButtonHTMLAttributes<HTMLButtonElement> & { primary?: bool
 };
 
 function Index() {
+  const { t } = usePreferences();
   const [tab, setTab] = useState<Tab>("analyze");
   const [input, setInput] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [optIn, setOptIn] = useState(false);
   const [history, setHistory] = useState<HistItem[]>([]);
+  const clearProtected = useCallback(() => {
+    setInput("");
+    setSubmitted("");
+    setTab("analyze");
+  }, []);
   useEffect(() => {
     setOptIn(localStorage.getItem(OKEY) === "1");
     try {
@@ -113,58 +121,67 @@ function Index() {
 
   return (
     <Shell>
-      <section className="mb-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
-        <div>
-          <p className="font-mono text-xs uppercase tracking-widest text-primary">
-            Open-source · offline · deterministic
-          </p>
-          <h1 className="mt-1 text-3xl font-bold md:text-4xl">Turn noisy logs into a fix plan.</h1>
-          <p className="mt-2 max-w-2xl text-muted-foreground">
-            Rule-based analysis that runs in your browser. Secrets are redacted before anything is
-            shown or exported. Nothing you paste is executed or uploaded. It aims to save debugging
-            time — it can't promise to solve every issue.
-          </p>
-        </div>
-        <div className="panel flex gap-4 p-3 font-mono text-xs">
+      <AccessGate onLocked={clearProtected}>
+        <section className="mb-6 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <div>
-            <div className="text-muted-foreground">Engine</div>
-            <div className="text-primary">local rules</div>
+            <p className="font-mono text-xs uppercase tracking-widest text-primary">
+              {" "}
+              {t("Open-source · offline · deterministic")}{" "}
+            </p>
+            <h1 className="mt-1 text-3xl font-bold md:text-4xl">
+              {" "}
+              {t("Turn noisy logs into a fix plan.")}{" "}
+            </h1>
+            <p className="mt-2 max-w-2xl text-muted-foreground">
+              {" "}
+              {t(
+                "Rule-based analysis that runs in your browser. Secrets are redacted before anything is shown or exported. Nothing you paste is executed or uploaded. It aims to save debugging time — it can't promise to solve every issue.",
+              )}{" "}
+            </p>
           </div>
-          <div>
-            <div className="text-muted-foreground">History</div>
-            <div>{optIn ? "this browser" : "off"}</div>
+          <div className="panel flex gap-4 p-3 font-mono text-xs">
+            <div>
+              <div className="text-muted-foreground"> {t("Engine")} </div>
+              <div className="text-primary"> {t("local rules")} </div>
+            </div>
+            <div>
+              <div className="text-muted-foreground"> {t("History")} </div>
+              <div>{optIn ? t("this browser") : t("off")}</div>
+            </div>
           </div>
+        </section>
+        <div className="mb-4 flex flex-wrap gap-1 border-b border-border">
+          {(["analyze", "compare", "checklist", "history"] as Tab[]).map((tabName) => (
+            <button
+              key={tabName}
+              onClick={() => setTab(tabName)}
+              className={`-mb-px border-b-2 px-4 py-2 text-sm capitalize ${tab === tabName ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+            >
+              {t(tabName)}
+              {tabName === "history" && history.length ? ` (${history.length})` : ""}
+            </button>
+          ))}
         </div>
-      </section>
-      <div className="mb-4 flex flex-wrap gap-1 border-b border-border">
-        {(["analyze", "compare", "checklist", "history"] as Tab[]).map((t) => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            className={`-mb-px border-b-2 px-4 py-2 text-sm capitalize ${tab === t ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"}`}
-          >
-            {t}
-            {t === "history" && history.length ? ` (${history.length})` : ""}
-          </button>
-        ))}
-      </div>
-      {tab === "analyze" && <Analyze input={input} setInput={setInput} run={run} result={result} />}
-      {tab === "compare" && <Compare />}
-      {tab === "checklist" && <Checklist />}
-      {tab === "history" && (
-        <History
-          optIn={optIn}
-          toggleOpt={toggleOpt}
-          history={history}
-          save={saveHist}
-          result={result}
-          open={(h) => {
-            setInput(h.sanitized);
-            setSubmitted(h.sanitized);
-            setTab("analyze");
-          }}
-        />
-      )}
+        {tab === "analyze" && (
+          <Analyze input={input} setInput={setInput} run={run} result={result} />
+        )}
+        {tab === "compare" && <Compare />}
+        {tab === "checklist" && <Checklist />}
+        {tab === "history" && (
+          <History
+            optIn={optIn}
+            toggleOpt={toggleOpt}
+            history={history}
+            save={saveHist}
+            result={result}
+            open={(h) => {
+              setInput(h.sanitized);
+              setSubmitted(h.sanitized);
+              setTab("analyze");
+            }}
+          />
+        )}
+      </AccessGate>
     </Shell>
   );
 }
@@ -180,6 +197,7 @@ function Analyze({
   run: (s?: string) => void;
   result: ReturnType<typeof analyze> | null;
 }) {
+  const { t } = usePreferences();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<Category | "all">("all");
   const [sev, setSev] = useState<Severity | "all">("all");
@@ -197,9 +215,9 @@ function Analyze({
     <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <div className="panel flex flex-col gap-3 p-4">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium">Log input</span>
+          <span className="text-sm font-medium"> {t("Log input")} </span>
           <select
-            aria-label="Load sample"
+            aria-label={t("Load sample")}
             className="ml-auto rounded border border-border bg-secondary px-2 py-1 text-sm"
             value=""
             onChange={(e) => {
@@ -210,13 +228,14 @@ function Analyze({
               }
             }}
           >
-            <option value="">Load sample…</option>
+            <option value=""> {t("Load sample…")} </option>
             {Object.keys(SAMPLES).map((k) => (
               <option key={k}>{k}</option>
             ))}
           </select>
           <label className="cursor-pointer rounded border border-border px-3 py-1 text-sm hover:border-primary">
-            Upload
+            {" "}
+            {t("Upload")}{" "}
             <input
               type="file"
               accept=".log,.txt,text/*"
@@ -230,16 +249,17 @@ function Analyze({
           </label>
         </div>
         <textarea
-          aria-label="Log input"
+          aria-label={t("Log input")}
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Paste build, runtime, CI, or terminal output here…"
+          placeholder={t("Paste build, runtime, CI, or terminal output here…")}
           className="min-h-[380px] flex-1 resize-y rounded border border-input bg-background p-3 font-mono text-xs outline-none focus:border-primary"
           spellCheck={false}
         />
         <div className="flex gap-2">
           <Btn primary onClick={() => run()} disabled={!input.trim()}>
-            Analyze
+            {" "}
+            {t("Analyze")}{" "}
           </Btn>
           <Btn
             onClick={() => {
@@ -247,26 +267,28 @@ function Analyze({
               run("");
             }}
           >
-            Clear
+            {" "}
+            {t("Clear")}{" "}
           </Btn>
           <span className="ml-auto self-center text-xs text-muted-foreground">
-            {input.length.toLocaleString()} chars
+            {input.length.toLocaleString()} {t("chars")}{" "}
           </span>
         </div>
       </div>
       <div className="space-y-3">
         {!result ? (
           <div className="panel grid min-h-[300px] place-items-center p-8 text-center text-muted-foreground">
-            Paste a log or load a sample to see findings.
+            {" "}
+            {t("Paste a log or load a sample to see findings.")}{" "}
           </div>
         ) : (
           <>
             <div className="panel flex flex-wrap items-center gap-3 p-3 text-sm">
               <span className="font-mono">
-                <b className="text-primary">{result.findings.length}</b> findings
+                <b className="text-primary">{result.findings.length}</b> {t("findings")}{" "}
               </span>
               <span className="font-mono text-muted-foreground">
-                {result.lineCount} lines · {result.redactions} redactions
+                {result.lineCount} {t("lines ·")} {result.redactions} {t("redactions")}{" "}
               </span>
               <div className="ml-auto flex gap-2">
                 <Btn
@@ -274,51 +296,58 @@ function Analyze({
                     download("devrescue-report.json", toJSON(result), "application/json")
                   }
                 >
-                  Export JSON
+                  {" "}
+                  {t("Export JSON")}{" "}
                 </Btn>
                 <Btn
                   onClick={() =>
                     download("devrescue-report.md", toMarkdown(result), "text/markdown")
                   }
                 >
-                  Export MD
+                  {" "}
+                  {t("Export MD")}{" "}
                 </Btn>
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
               <input
-                aria-label="Filter findings"
+                aria-label={t("Filter findings")}
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Filter…"
+                placeholder={t("Filter…")}
                 className="flex-1 rounded border border-input bg-background px-3 py-1.5 text-sm outline-none focus:border-primary"
               />
               <select
-                aria-label="Category"
+                aria-label={t("Category")}
                 value={cat}
                 onChange={(e) => setCat(e.target.value as Category)}
                 className="rounded border border-border bg-secondary px-2 text-sm"
               >
-                <option value="all">All categories</option>
+                <option value="all"> {t("All categories")} </option>
                 {cats.map((c) => (
-                  <option key={c}>{c}</option>
+                  <option key={c} value={c}>
+                    {t(c)}
+                  </option>
                 ))}
               </select>
               <select
-                aria-label="Severity"
+                aria-label={t("Severity")}
                 value={sev}
                 onChange={(e) => setSev(e.target.value as Severity)}
                 className="rounded border border-border bg-secondary px-2 text-sm"
               >
-                <option value="all">All severities</option>
-                <option>critical</option>
-                <option>error</option>
-                <option>warning</option>
+                <option value="all"> {t("All severities")} </option>
+                <option value="critical">{t("critical")}</option>
+                <option value="error">{t("error")}</option>
+                <option value="warning">{t("warning")}</option>
               </select>
             </div>
             {list.length === 0 && (
               <div className="panel p-6 text-center text-sm text-muted-foreground">
-                No known patterns matched. DevRescue only recognizes the categories listed in Docs.
+                {" "}
+                {t(
+                  "No known patterns matched. DevRescue only recognizes the categories listed in Docs.",
+                )}{" "}
               </div>
             )}
             {list.map((f) => (
@@ -326,7 +355,8 @@ function Analyze({
             ))}
             <details className="panel p-3 text-sm">
               <summary className="cursor-pointer text-muted-foreground">
-                Sanitized log preview
+                {" "}
+                {t("Sanitized log preview")}{" "}
               </summary>
               <pre className="mt-2 max-h-72 overflow-auto font-mono text-xs">
                 {result.sanitized}
@@ -340,6 +370,7 @@ function Analyze({
 }
 
 function FindingCard({ f }: { f: Finding }) {
+  const { t, language } = usePreferences();
   const [copied, setCopied] = useState<number | null>(null);
   const copy = (c: string, i: number) => {
     navigator.clipboard?.writeText(c);
@@ -352,21 +383,21 @@ function FindingCard({ f }: { f: Finding }) {
         <span
           className={`rounded px-2 py-0.5 font-mono text-[10px] uppercase ${sevCls[f.severity]}`}
         >
-          {f.severity}
+          {t(f.severity)}
         </span>
         <span className="rounded bg-secondary px-2 py-0.5 font-mono text-[10px] uppercase text-muted-foreground">
-          {f.category}
+          {t(f.category)}
         </span>
-        <h3 className="font-semibold">{f.title}</h3>
+        <h3 className="font-semibold">{translate(f.title, language)}</h3>
         <span className="ml-auto font-mono text-xs text-muted-foreground">
-          {Math.round(f.confidence * 100)}% confidence
+          {Math.round(f.confidence * 100)} {t("% confidence")}{" "}
           {f.occurrences > 1 ? ` · ${f.occurrences}×` : ""}
         </span>
       </div>
       {f.location && (
         <div className="font-mono text-xs text-accent-foreground">📍 {f.location}</div>
       )}
-      <p className="text-sm text-muted-foreground">{f.explanation}</p>
+      <p className="text-sm text-muted-foreground">{t(f.explanation)}</p>
       <pre className="overflow-x-auto rounded bg-background p-2 font-mono text-xs">
         {f.evidence.join("\n")}
       </pre>
@@ -381,7 +412,7 @@ function FindingCard({ f }: { f: Finding }) {
               onClick={() => copy(c, i)}
               className="text-xs text-muted-foreground hover:text-primary"
             >
-              {copied === i ? "Copied" : "Copy"}
+              {copied === i ? t("Copied") : t("Copy")}
             </button>
           </div>
         ))}
@@ -391,7 +422,8 @@ function FindingCard({ f }: { f: Finding }) {
           key={i}
           className="rounded border border-warning/40 bg-warning/10 px-2 py-1 text-xs text-warning"
         >
-          ⚠ Review: {w}
+          {" "}
+          {t("⚠ Review:")} {t(w)}
         </p>
       ))}
     </article>
@@ -399,6 +431,7 @@ function FindingCard({ f }: { f: Finding }) {
 }
 
 function Compare() {
+  const { t, language } = usePreferences();
   const [a, setA] = useState("");
   const [b, setB] = useState("");
   const [res, setRes] = useState<ReturnType<typeof compareLogs> | null>(null);
@@ -409,7 +442,7 @@ function Compare() {
       </h3>
       {items.map((f) => (
         <div key={f.id} className="border-t border-border py-1.5 text-sm">
-          {f.title}
+          {translate(f.title, language)}
           {f.location && (
             <div className="font-mono text-xs text-muted-foreground">{f.location}</div>
           )}
@@ -421,8 +454,8 @@ function Compare() {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         {[
-          ["Before", a, setA],
-          ["After", b, setB],
+          [t("Before"), a, setA],
+          [t("After"), b, setB],
         ].map(([l, v, s]) => (
           <label key={l as string} className="panel block p-3 text-sm">
             {l as string}
@@ -436,13 +469,14 @@ function Compare() {
         ))}
       </div>
       <Btn primary onClick={() => setRes(compareLogs(a, b))} disabled={!a.trim() && !b.trim()}>
-        Compare logs
+        {" "}
+        {t("Compare logs")}{" "}
       </Btn>
       {res && (
         <div className="grid gap-4 md:grid-cols-3">
-          <Col t="New" items={res.introduced} cls="text-destructive" />
-          <Col t="Resolved" items={res.resolved} cls="text-primary" />
-          <Col t="Still present" items={res.persisting} cls="text-warning" />
+          <Col t={t("New")} items={res.introduced} cls="text-destructive" />
+          <Col t={t("Resolved")} items={res.resolved} cls="text-primary" />
+          <Col t={t("Still present")} items={res.persisting} cls="text-warning" />
         </div>
       )}
     </div>
@@ -462,6 +496,7 @@ const CHECKS: [string, string][] = [
   ["Network / proxy", "env | grep -i proxy"],
 ];
 function Checklist() {
+  const { t } = usePreferences();
   const [done, setDone] = useState<Record<string, boolean>>({});
   useEffect(() => {
     try {
@@ -479,7 +514,7 @@ function Checklist() {
   return (
     <div className="panel p-4">
       <div className="mb-3 flex items-center gap-3">
-        <h2 className="font-semibold">Environment checklist</h2>
+        <h2 className="font-semibold"> {t("Environment checklist")} </h2>
         <span className="font-mono text-xs text-primary">
           {n}/{CHECKS.length}
         </span>
@@ -490,7 +525,8 @@ function Checklist() {
             localStorage.removeItem(CKEY);
           }}
         >
-          Reset
+          {" "}
+          {t("Reset")}{" "}
         </Btn>
       </div>
       <div className="grid gap-2 md:grid-cols-2">
@@ -506,7 +542,7 @@ function Checklist() {
               className="mt-1 accent-primary"
             />
             <span>
-              <span className="block text-sm font-medium">{k}</span>
+              <span className="block text-sm font-medium">{t(k)}</span>
               <code className="font-mono text-xs text-muted-foreground">{c}</code>
             </span>
           </label>
@@ -531,6 +567,7 @@ function History({
   save: (h: HistItem[]) => void;
   open: (h: HistItem) => void;
 }) {
+  const { t } = usePreferences();
   return (
     <div className="space-y-3">
       <RemoteSync result={result} />
@@ -541,25 +578,26 @@ function History({
             checked={optIn}
             onChange={(e) => toggleOpt(e.target.checked)}
             className="accent-primary"
-          />
-          Save sanitized sessions in this browser
+          />{" "}
+          {t("Save sanitized sessions in this browser")}{" "}
         </label>
-        <span className="text-xs text-muted-foreground">Stored in this browser only.</span>
+        <span className="text-xs text-muted-foreground"> {t("Stored in this browser only.")} </span>
         <Btn
           className="ml-auto"
           disabled={!history.length}
           onClick={() => {
-            if (confirm("Delete all local history?")) save([]);
+            if (confirm(t("Delete all local history?"))) save([]);
           }}
         >
-          Clear all
+          {" "}
+          {t("Clear all")}{" "}
         </Btn>
       </div>
       {!history.length && (
         <div className="panel p-6 text-center text-sm text-muted-foreground">
           {optIn
-            ? "No sessions yet. Run an analysis."
-            : "History is off. Enable it to keep sanitized sessions locally."}
+            ? t("No sessions yet. Run an analysis.")
+            : t("History is off. Enable it to keep sanitized sessions locally.")}
         </div>
       )}
       {history.map((h) => (
@@ -567,10 +605,12 @@ function History({
           <span className="font-mono text-xs text-muted-foreground">
             {new Date(h.at).toLocaleString()}
           </span>
-          <span className="flex-1">{h.title}</span>
-          <span className="font-mono text-xs text-primary">{h.count} findings</span>
-          <Btn onClick={() => open(h)}>Open</Btn>
-          <Btn onClick={() => save(history.filter((x) => x.id !== h.id))}>Delete</Btn>
+          <span className="flex-1">{t(h.title)}</span>
+          <span className="font-mono text-xs text-primary">
+            {h.count} {t("findings")}{" "}
+          </span>
+          <Btn onClick={() => open(h)}> {t("Open")} </Btn>
+          <Btn onClick={() => save(history.filter((x) => x.id !== h.id))}> {t("Delete")} </Btn>
         </div>
       ))}
     </div>

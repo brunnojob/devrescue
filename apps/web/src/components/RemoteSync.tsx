@@ -1,4 +1,7 @@
+import { usePreferences } from "@/lib/preferences";
 import { useCallback, useEffect, useState } from "react";
+import { SyncTroubleshoot } from "./SyncTroubleshoot";
+import { Button } from "./ui/button";
 import { useServerFn } from "@tanstack/react-start";
 import type { AnalysisResult } from "@/lib/analyzer";
 import { toSyncReport, type SyncReport } from "@/lib/sync-report";
@@ -26,7 +29,16 @@ const STATE_LABEL: Record<Status["db"], string> = {
 const btn =
   "rounded border border-border px-3 py-1.5 text-sm hover:border-primary disabled:opacity-40";
 
-export function RemoteSync({ result }: { result: AnalysisResult | null }) {
+export function RemoteSync({
+  result,
+  onAccountChange,
+  accountOnly = false,
+}: {
+  result: AnalysisResult | null;
+  onAccountChange?: () => void;
+  accountOnly?: boolean;
+}) {
+  const { t } = usePreferences();
   const status$ = useServerFn(getSyncStatus);
   const auth$ = useServerFn(authenticate);
   const out$ = useServerFn(signOut);
@@ -52,14 +64,14 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
       const s = await status$();
       setStatus(s);
       setCheckedAt(Date.now());
-      if (s.csrf) {
+      if (s.csrf && !accountOnly) {
         const r = await list$({ data: { csrf: s.csrf } });
-        if (r.ok) setReports(r.reports);
+        setReports(r.ok ? r.reports : []);
       } else setReports([]);
     } catch {
-      setMsg("Could not reach the DevRescue server.");
+      setMsg(t("Could not reach the DevRescue server."));
     }
-  }, [status$, list$]);
+  }, [status$, list$, accountOnly]);
   useEffect(() => {
     void refresh();
   }, [refresh]);
@@ -71,44 +83,39 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
       const r = await fn();
       setMsg(r.ok ? (done ?? "") : (r.error ?? "Request failed"));
       await refresh();
+      onAccountChange?.();
     } catch {
-      setMsg("Invalid input or request failed.");
+      setMsg(t("Invalid input or request failed."));
     } finally {
       setBusy(false);
     }
   };
 
   if (!status)
-    return <div className="panel p-4 text-sm text-muted-foreground">Checking account sync…</div>;
+    return (
+      <div className="panel p-4 text-sm text-muted-foreground"> {t("Checking account sync…")} </div>
+    );
   const csrf = status.csrf ?? "";
   return (
     <div className="panel space-y-3 p-4 text-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <strong>Account sync</strong>
+        <strong> {t("Account sync")} </strong>
         <span className="font-mono text-xs text-muted-foreground">
-          server: {STATE_LABEL[status.db]}
+          {" "}
+          {t("server:")} {t(STATE_LABEL[status.db])}
         </span>
-        {status.detail && <span className="text-xs text-destructive">({status.detail})</span>}
-        <button
+        <Button
+          variant="outline"
           className={`${btn} ml-auto`}
           disabled={busy || Date.now() - checkedAt < 30_000}
           onClick={() => void refresh()}
-          title="Server status is re-checked at most every 30 seconds"
+          title={t("Server status is re-checked at most every 30 seconds")}
         >
-          Recheck
-        </button>
+          {" "}
+          {t("Recheck")}{" "}
+        </Button>
       </div>
-      {status.db !== "ready" && (
-        <p className="text-xs text-muted-foreground">
-          {status.db === "not_configured"
-            ? "No database credentials are set on the server, so nothing can be synced. History stays in this browser."
-            : status.db === "schema_missing"
-              ? "The database answers, but the DevRescue tables have not been installed yet."
-              : status.db === "schema_incompatible"
-                ? "Existing DevRescue tables have a different layout. Nothing was changed; sync stays off until they are migrated manually."
-                : "Sync is unavailable right now. Nothing has been uploaded."}
-        </p>
-      )}
+      <SyncTroubleshoot state={status.db} kind={status.kind} detail={status.detail} />
       {status.db === "ready" && !status.user && (
         <form
           className="flex flex-wrap gap-2"
@@ -125,7 +132,7 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
             type="email"
             required
             maxLength={254}
-            placeholder="email"
+            placeholder={t("email")}
             autoComplete="email"
             value={form.email}
             onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -136,35 +143,44 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
             required
             minLength={12}
             maxLength={128}
-            placeholder="password (12+ chars)"
+            placeholder={t("password (12+ chars)")}
             autoComplete="current-password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="rounded border border-border bg-background px-2 py-1"
           />
-          <button className={btn} disabled={busy} value="login">
-            Sign in
-          </button>
-          <button className={btn} disabled={busy} value="register">
-            Create account
-          </button>
+          <Button variant="outline" disabled={busy} value="login">
+            {" "}
+            {t("Sign in")}{" "}
+          </Button>
+          <Button variant="outline" disabled={busy} value="register">
+            {" "}
+            {t("Create account")}{" "}
+          </Button>
         </form>
       )}
       {status.user && (
         <>
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs">Signed in as {status.user.email}</span>
-            <button className={btn} disabled={busy} onClick={() => void act(() => out$())}>
-              Sign out
-            </button>
-            <button className={btn} disabled={!result} onClick={() => setPreview(!preview)}>
-              {preview ? "Hide" : "Review & sync current analysis"}
-            </button>
+            <span className="text-xs">
+              {" "}
+              {t("Signed in as")} {status.user.email}
+            </span>
+            <Button variant="outline" disabled={busy} onClick={() => void act(() => out$())}>
+              {" "}
+              {t("Sign out")}{" "}
+            </Button>
+            {!accountOnly && (
+              <Button variant="outline" disabled={!result} onClick={() => setPreview(!preview)}>
+                {preview ? t("Hide") : t("Review & sync current analysis")}
+              </Button>
+            )}
           </div>
           {preview && result && (
             <div className="space-y-2">
               <p className="text-xs text-muted-foreground">
-                Only this sanitized summary is sent — not your log:
+                {" "}
+                {t("Only this sanitized summary is sent — not your log:")}{" "}
               </p>
               <pre className="max-h-48 overflow-auto rounded bg-muted p-2 text-xs">
                 {JSON.stringify(toSyncReport(result), null, 2)}
@@ -175,16 +191,17 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
                 onClick={() =>
                   void act(
                     () => up$({ data: { csrf, report: toSyncReport(result) } }),
-                    "Synced.",
+                    t("Synced."),
                   ).then(() => setPreview(false))
                 }
               >
-                Upload this summary
+                {" "}
+                {t("Upload this summary")}{" "}
               </button>
             </div>
           )}
-          {!reports.length && (
-            <p className="text-xs text-muted-foreground">No synced reports yet.</p>
+          {!accountOnly && !reports.length && (
+            <p className="text-xs text-muted-foreground"> {t("No synced reports yet.")} </p>
           )}
           {reports.map((r) => (
             <div
@@ -194,16 +211,17 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
               <span className="font-mono text-xs text-muted-foreground">
                 {new Date(r.createdAt).toLocaleString()}
               </span>
-              <span className="flex-1">{r.report.title}</span>
+              <span className="flex-1">{t(r.report.title)}</span>
               <span className="font-mono text-xs text-primary">
-                {r.report.findings.length} findings
+                {r.report.findings.length} {t("findings")}{" "}
               </span>
               <button
                 className={btn}
                 disabled={busy}
-                onClick={() => void act(() => del$({ data: { csrf, id: r.id } }), "Deleted.")}
+                onClick={() => void act(() => del$({ data: { csrf, id: r.id } }), t("Deleted."))}
               >
-                Delete
+                {" "}
+                {t("Delete")}{" "}
               </button>
             </div>
           ))}
@@ -211,7 +229,7 @@ export function RemoteSync({ result }: { result: AnalysisResult | null }) {
       )}
       {msg && (
         <p className="text-xs" role="status">
-          {msg}
+          {t(msg)}
         </p>
       )}
     </div>

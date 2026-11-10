@@ -134,6 +134,82 @@
   }
 }
 
+:root[data-theme="dim"] {
+  --background: oklch(0.27 0.006 260);
+  --card: oklch(0.31 0.006 260);
+  --secondary: oklch(0.36 0.008 260);
+  --muted: oklch(0.35 0.008 260);
+  --border: oklch(0.43 0.008 260);
+  --input: var(--border);
+  --muted-foreground: oklch(0.78 0.012 260);
+  --primary: oklch(0.82 0.12 180);
+  --primary-foreground: oklch(0.2 0.02 180);
+}
+:root[data-theme="midnight"] {
+  --background: oklch(0.13 0.005 260);
+  --card: oklch(0.18 0.005 260);
+  --primary: oklch(0.83 0.13 225);
+  --primary-foreground: oklch(0.16 0.02 225);
+  --accent: oklch(0.28 0.035 225);
+  --accent-foreground: var(--primary);
+}
+:root[data-theme="forest"] {
+  --background: oklch(0.2 0.025 165);
+  --card: oklch(0.25 0.028 165);
+  --secondary: oklch(0.3 0.025 165);
+  --muted: var(--secondary);
+  --border: oklch(0.38 0.03 165);
+  --input: var(--border);
+  --primary: oklch(0.86 0.13 85);
+  --primary-foreground: oklch(0.2 0.03 85);
+  --accent: oklch(0.33 0.04 165);
+  --accent-foreground: oklch(0.86 0.12 165);
+}
+:root:is([data-theme="light"], [data-theme="mint"], [data-theme="rose"], [data-theme="sandstone"]) {
+  --background: oklch(0.98 0.002 260);
+  --foreground: oklch(0.23 0.01 260);
+  --card: oklch(1 0 0);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --secondary: oklch(0.94 0.005 260);
+  --secondary-foreground: var(--foreground);
+  --muted: var(--secondary);
+  --muted-foreground: oklch(0.48 0.012 260);
+  --border: oklch(0.85 0.01 260);
+  --input: var(--border);
+  --primary: oklch(0.47 0.13 150);
+  --primary-foreground: oklch(0.99 0 0);
+  --accent: oklch(0.94 0.04 150);
+  --accent-foreground: oklch(0.38 0.1 150);
+  --destructive: oklch(0.52 0.2 25);
+  --warning: oklch(0.5 0.12 70);
+  --glow: 0 2px 8px color-mix(in oklab, var(--foreground) 8%, transparent);
+}
+:root[data-theme="mint"] {
+  --background: oklch(0.97 0.02 165);
+  --primary: oklch(0.43 0.1 175);
+  --accent: oklch(0.92 0.04 165);
+  --accent-foreground: var(--primary);
+}
+:root[data-theme="rose"] {
+  --background: oklch(0.97 0.01 350);
+  --primary: oklch(0.48 0.15 350);
+  --accent: oklch(0.93 0.03 350);
+  --accent-foreground: var(--primary);
+}
+:root[data-theme="sandstone"] {
+  --background: oklch(0.96 0.008 85);
+  --primary: oklch(0.46 0.095 65);
+  --accent: oklch(0.92 0.025 85);
+  --accent-foreground: var(--primary);
+}
+:root[data-theme] {
+  --ring: var(--primary);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+}
+
 @utility bg-grid {
   background-image: var(--grid);
   background-size: 32px 32px;

@@ -3,7 +3,14 @@
 # DevRescue
 ### Developer friction, diagnosed.
 
-Turn noisy build logs into evidence and practical next steps.<br>Catch environment drift before it becomes another broken afternoon. ( 3 hours free, after sponsor any value to get full acess lifetime, just a one payment for lifetime acess )
+
+[Open the GitHub Pages entry](https://brunnojob.github.io/devrescue/) · [Open the hosted tool](https://log-sleuth-workbench.lovable.app)
+
+![DevRescue access screen](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/5b5ca9eb-edfc-448f-85e7-352d58c6bdfd/devrescue-access.png)
+
+
+
+Turn noisy build logs into evidence and practical next steps.<br>Catch environment drift before it becomes another broken afternoon. Hosted access includes a three-hour free trial, then GitHub Sponsors of any amount — active monthly or confirmed one-time.
 
 [![CI](https://github.com/brunnojob/devrescue/actions/workflows/ci.yml/badge.svg)](https://github.com/brunnojob/devrescue/actions/workflows/ci.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-c3f66c)](LICENSE)
@@ -13,6 +20,23 @@ Turn noisy build logs into evidence and practical next steps.<br>Catch environme
 [Open workbench](https://brunnojob.github.io/devrescue/) · [Português](README.pt-BR.md) · [Support development](https://github.com/sponsors/brunnojob) · [Limits & privacy](docs/LIMITATIONS.md)
 
 </div>
+
+## Visual preview
+
+### Access and documentation preview
+
+![Real access and documentation screens](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/807fb01d-d9d6-4311-832c-ba1ed4808fc0/devrescue-preview.gif)
+
+### Appearance gallery
+
+![Eight DevRescue appearance themes](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/c5975b63-8504-4099-89a2-ac5588dcc35a/devrescue-appearance.gif)
+
+Choose **English or Portuguese** in the header. Navigation, access status, documentation,
+findings and warnings follow the selection; original log evidence and commands remain unchanged.
+Choose **Graphite, Dim, Midnight, Forest, Light, Mint, Rose or Sandstone**. Both preferences
+are saved in the current browser. These previews show the real access and documentation screens,
+not a completed GitHub sign-in or a verified sponsor session.
+
 
 ## From a broken build to an investigation path
 
@@ -24,7 +48,7 @@ DevRescue groups repeated diagnostics, keeps `src/api.ts:45:7`, explains which c
 
 **No paid AI API. No required account. No automatic execution of log-derived commands.** The core runs locally with Node.js 22+ and has zero runtime dependencies.
 
-## Try it
+## Quick start
 
 ```sh
 git clone https://github.com/brunnojob/devrescue.git
@@ -96,15 +120,15 @@ The original build remains failed when it fails. DevRescue appends a sanitized M
 
 The root `index.html` imports the same `src/engine.js` as the CLI and Action. Serve the checkout over HTTP, for example `python -m http.server 8080`, then open localhost:8080. Paste/upload logs, inspect findings, compare incidents and export reports. Raw logs are not persisted. History is optional and local.
 
-The full-stack [Lovable application](https://lovable.dev/projects/40c635c4-c8fc-4d94-82d8-338c46515291) now has per-user account sync. Its source is in [`apps/web`](apps/web), including the authenticated server functions, PostgreSQL adapter, isolated schema and migration/verification scripts. The static GitHub Pages workbench remains local-only.
+The full-stack [Lovable application](https://lovable.dev/projects/40c635c4-c8fc-4d94-82d8-338c46515291) now has per-user account sync. Its source is in [`apps/web`](apps/web), including the authenticated server functions, PostgreSQL adapter, isolated schema and migration/verification scripts. The GitHub Pages entry opens the separately hosted tool; the standalone root browser prototype remains locally executable.
 
-See [Azure setup and current connection status](docs/AZURE.md). **Live Azure connectivity is not yet verified.** The full-stack app uses per-user sessions in httpOnly secure cookies, CSRF checks, and explicitly reviewed sanitized summaries. It never sends full logs to the database. The older `server/` service-token API remains a standalone single-owner prototype and is not used by the full-stack application.
+See [Azure setup and current connection status](docs/AZURE.md). **Azure connection and synthetic create/read/delete were verified in development; the updated hosted deployment and real GitHub sponsorship flow still need verification.** The full-stack app uses per-user sessions in httpOnly secure cookies, CSRF checks, and explicitly reviewed sanitized summaries. It never sends full logs to the database. The older `server/` service-token API remains a standalone single-owner prototype and is not used by the full-stack application.
 
 ## Sponsor useful maintenance
 
-[♥ Sponsor brunnodev](https://github.com/sponsors/brunnojob) to help fund maintained rules, reproducible fixtures and compatibility work. Suggested voluntary support: **$5/month** for individuals and **$10/month** for frequent users. These are suggestions, not configured GitHub tier claims or paid feature gates.
+[♥ Sponsor brunnodev](https://github.com/sponsors/brunnojob) to help fund maintained rules, reproducible fixtures and compatibility work. Hosted access has a three-hour free trial. Afterward, any active monthly or confirmed one-time GitHub sponsorship qualifies — no minimum amount.
 
-The core remains MIT open source. Sponsorship is not a promise that every error can be fixed or that revenue is guaranteed. Per-user history code is implemented in `apps/web`, pending verified Azure connectivity and deployment. Stronger language-aware source patches and production SaaS hardening remain future work.
+The core remains MIT open source. Sponsorship is not a promise that every error can be fixed or that revenue is guaranteed. Per-user history code is implemented in `apps/web`, with development Azure connectivity verified and the updated hosted deployment pending. Stronger language-aware source patches and production SaaS hardening remain future work.
 
 ## Quality and contribution
 
@@ -114,7 +138,7 @@ npm run demo
 npm pack --dry-run
 ```
 
-CI runs on Linux, Windows and macOS with Node 22 and 24. Tests cover rule fixtures, deduplication, locations, false positives, redaction, comparison, patch backup/staleness, symlinks and API authorization. Azure integration has not been tested against a live server.
+CI runs on Linux, Windows and macOS with Node 22 and 24. Tests cover rule fixtures, deduplication, locations, false positives, redaction, comparison, patch backup/staleness, symlinks and API authorization. The hosted application has passed a development Azure connection and synthetic report lifecycle check; published-runtime and real GitHub sponsorship checks remain pending.
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Start with a sanitized failing fixture and its expected diagnostic. Do not submit real credentials or private incident logs.
 

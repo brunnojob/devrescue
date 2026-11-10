@@ -1,6 +1,7 @@
 // Server-only PostgreSQL adapter. Credentials come from server secrets; TLS is always verified.
 import pg from "pg";
 import { COLUMNS_SQL, evaluateSchema } from "./schema-check";
+import { classifyDbError, DIAGNOSES, type DbErrorKind } from "./db-diagnosis";
 
 export const EXPECTED_HOST = "rg-db-wallmarket.postgres.database.azure.com";
 export type DbConfigState =
@@ -79,17 +80,10 @@ export type DbState =
   | "schema_missing"
   | "schema_incompatible"
   | "ready";
-export type Probe = { state: DbState; missing: string[]; detail?: string };
+export type Probe = { state: DbState; missing: string[]; detail?: string; kind?: DbErrorKind };
 
 export function describeDbError(e: unknown) {
-  const code = String((e as { code?: string }).code ?? "");
-  const msg = String((e as { message?: string }).message ?? "");
-  if (code === "28P01" || code === "28000") return "authentication failed";
-  if (code === "3D000") return "database does not exist";
-  if (/CERT|SELF_SIGNED|UNABLE_TO_VERIFY/i.test(code)) return "TLS certificate verification failed";
-  if (["ETIMEDOUT", "ENOTFOUND", "ECONNREFUSED"].includes(code) || /timeout/i.test(msg))
-    return "network unreachable (check Azure firewall rules)";
-  return "connection failed";
+  return DIAGNOSES[classifyDbError(e)].short;
 }
 
 /** Probe runs SELECT 1 + schema preflight on the given query fn. */
@@ -122,7 +116,8 @@ export async function probeDb(now = Date.now()): Promise<Probe> {
   inflight ??= withDbConfig(cfg.config, probeWith)
     .catch((e): Probe => {
       console.error("devrescue: database probe failed");
-      return { state: "unreachable", missing: [], detail: describeDbError(e) };
+      const kind = classifyDbError(e);
+      return { state: "unreachable", missing: [], kind, detail: DIAGNOSES[kind].short };
     })
     .then((value) => {
       cached = { at: Date.now(), value };
