@@ -3,7 +3,7 @@
 # DevRescue
 ### Developer friction, diagnosed.
 
-Turn noisy build logs into evidence and practical next steps.<br>Catch environment drift before it becomes another broken afternoon. ( 3 hours free, after sponsor any value to get full acess lifetime )
+Turn noisy build logs into evidence and practical next steps.<br>Catch environment drift before it becomes another broken afternoon. ( 3 hours free, after sponsor any value to get full acess lifetime, just a one payment for lifetime acess )
 
 [![CI](https://github.com/brunnojob/devrescue/actions/workflows/ci.yml/badge.svg)](https://github.com/brunnojob/devrescue/actions/workflows/ci.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-c3f66c)](LICENSE)
