@@ -15,9 +15,15 @@ um patrocínio no GitHub Sponsors de **qualquer valor — mensal ativo ou único
 
 ## Prévia visual
 
-![Telas reais de acesso e documentação](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/807fb01d-d9d6-4311-832c-ba1ed4808fc0/devrescue-preview.gif)
+![DevRescue — transforme logs em um plano de correção](docs/media/preview.jpg)
 
-![Oito aparências do DevRescue](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/c5975b63-8504-4099-89a2-ac5588dcc35a/devrescue-appearance.gif)
+### Entrada e documentação
+
+![Bancada do DevRescue](docs/media/workbench.jpg)
+
+### Galeria de aparências
+
+![Checklist de ambiente do DevRescue](docs/media/checklist.jpg)
 
 Escolha **inglês ou português** no cabeçalho: navegação, status de acesso, documentação,
 diagnósticos e avisos seguem o idioma; evidências originais e comandos não são alterados.

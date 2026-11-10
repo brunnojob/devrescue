@@ -1,0 +1,22 @@
+name: Import README images
+on:
+  push:
+    paths: [".github/workflows/import-readme-images.yml"]
+permissions:
+  contents: write
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          mkdir -p docs/media
+          curl -fsSL "https://devrescue.lovable.app/__l5e/assets-v1/2978c623-899e-4a73-a45a-478a0aea689b/readme-devrescue-social-preview.jpg" -o docs/media/preview.jpg
+          curl -fsSL "https://devrescue.lovable.app/__l5e/assets-v1/56dea1ff-c66d-44e8-b900-e05631ef4d48/readme-devrescue1.jpg" -o docs/media/workbench.jpg
+          curl -fsSL "https://devrescue.lovable.app/__l5e/assets-v1/40dff213-ccab-47d8-a6a0-c57142a8bcb2/readme-devrescue2.jpg" -o docs/media/checklist.jpg
+          git rm -q .github/workflows/import-readme-images.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898729+github-actions[bot]@users.noreply.github.com"
+          git add docs/media
+          git commit -m "Add README preview images"
+          git push

@@ -23,20 +23,20 @@ Turn noisy build logs into evidence and practical next steps.<br>Catch environme
 
 ## Visual preview
 
+![DevRescue — turn noisy logs into a fix plan](docs/media/preview.jpg)
+
 ### Access and documentation preview
 
-![Real access and documentation screens](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/807fb01d-d9d6-4311-832c-ba1ed4808fc0/devrescue-preview.gif)
+![DevRescue workbench: paste a log, analyze, compare, checklist and history](docs/media/workbench.jpg)
 
 ### Appearance gallery
 
-![Eight DevRescue appearance themes](https://log-sleuth-workbench.lovable.app/__l5e/assets-v1/c5975b63-8504-4099-89a2-ac5588dcc35a/devrescue-appearance.gif)
+![DevRescue environment checklist](docs/media/checklist.jpg)
 
-Choose **English or Portuguese** in the header. Navigation, access status, documentation,
-findings and warnings follow the selection; original log evidence and commands remain unchanged.
-Choose **Graphite, Dim, Midnight, Forest, Light, Mint, Rose or Sandstone**. Both preferences
-are saved in the current browser. These previews show the real access and documentation screens,
-not a completed GitHub sign-in or a verified sponsor session.
-
+Choose **English or Portuguese** in the header — navigation, access status, documentation,
+findings and warnings follow the selection, while original log evidence and commands stay unchanged.
+Choose an appearance: **Graphite, Dim, Midnight, Forest, Light, Mint, Rose or Sandstone**
+(dark, dim and light variations). Both preferences are saved in the current browser.
 
 ## From a broken build to an investigation path
 
@@ -120,7 +120,7 @@ The original build remains failed when it fails. DevRescue appends a sanitized M
 
 The root `index.html` imports the same `src/engine.js` as the CLI and Action. Serve the checkout over HTTP, for example `python -m http.server 8080`, then open localhost:8080. Paste/upload logs, inspect findings, compare incidents and export reports. Raw logs are not persisted. History is optional and local.
 
-The full-stack [Lovable application](https://lovable.dev/projects/40c635c4-c8fc-4d94-82d8-338c46515291) now has per-user account sync. Its source is in [`apps/web`](apps/web), including the authenticated server functions, PostgreSQL adapter, isolated schema and migration/verification scripts. The GitHub Pages entry opens the separately hosted tool; the standalone root browser prototype remains locally executable.
+The full-stack hosted application now has per-user account sync. Its source is in [`apps/web`](apps/web), including the authenticated server functions, PostgreSQL adapter, isolated schema and migration/verification scripts. The GitHub Pages entry opens the hosted tool; the standalone root browser prototype remains locally executable.
 
 See [Azure setup and current connection status](docs/AZURE.md). **Azure connection and synthetic create/read/delete were verified in development; the updated hosted deployment and real GitHub sponsorship flow still need verification.** The full-stack app uses per-user sessions in httpOnly secure cookies, CSRF checks, and explicitly reviewed sanitized summaries. It never sends full logs to the database. The older `server/` service-token API remains a standalone single-owner prototype and is not used by the full-stack application.
 
