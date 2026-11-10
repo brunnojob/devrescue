@@ -4,7 +4,7 @@
 ### Developer friction, diagnosed.
 
 
-[Open the GitHub Pages entry](https://brunnojob.github.io/devrescue/) · [Open the hosted tool]([https://log-sleuth-workbench.lovable.app](https://brunnojob.github.io/devrescue/tool.html))
+[Open the GitHub Pages entry](https://brunnojob.github.io/devrescue/) · [Open the hosted tool](https://brunnojob.github.io/devrescue/tool.html)
 
 
 
