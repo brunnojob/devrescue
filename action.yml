@@ -1,4 +1,4 @@
-name: DevRescue
+name: DevRescue 1.0
 description: Turn a local CI log into sanitized diagnostic evidence and a job summary.
 author: brunnojob
 
