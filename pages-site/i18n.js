@@ -4,6 +4,7 @@
   document.head.appendChild(st);
   var pt = {
     "LOGS · DIAGNOSTICS · PRIVACY": "LOGS · DIAGNÓSTICO · PRIVACIDADE",
+    "Example log": "Exemplo de log",
     "Three hours to turn your logs into a fix plan.": "Três horas para transformar seus logs em um plano de correção.",
     "Port already in use": "Porta já em uso",
     "Check the process before stopping the application.": "Verifique o processo antes de encerrar a aplicação.",
