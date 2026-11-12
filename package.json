@@ -11,10 +11,10 @@
     "devrescue": "bin/devrescue.js"
   },
   "scripts": {
-    "test": "node --test test/api.test.js test/doctor.test.js test/engine.test.js",
+    "test": "node --test test/doctor.test.js test/engine.test.js",
     "demo": "node bin/devrescue.js analyze examples/build.log",
     "doctor": "node bin/devrescue.js doctor .",
-    "start": "node server/index.js"
+    "start": "npm --prefix apps/web run api:start"
   },
   "files": [
     "src",

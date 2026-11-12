@@ -1,53 +1,41 @@
-<div align="center">
-
 # DevRescue
-### Falhas de desenvolvimento, diagnosticadas.
 
-🇺🇸 [English](README.md) · 🇧🇷 Português (BR)
+**Menos ruído nos logs. Evidência clara. Correções para revisar.**
 
-[Abrir no GitHub Pages](https://brunnojob.github.io/devrescue/) · [Abrir a ferramenta](https://brunnojob.github.io/devrescue/tool.html) · [Patrocinar](https://github.com/sponsors/brunnojob)
+[Ferramenta](https://brunnojob.github.io/devrescue/) · [English](README.md) · [Configurar Azure](docs/AZURE.md) · [Patrocinar](https://github.com/sponsors/brunnojob)
 
-</div>
+O DevRescue identifica falhas conhecidas em logs, agrupa ocorrências, mostra arquivo/linha quando disponíveis e sugere comandos e etapas de correção. Não executa sugestões nem promete resolver todo erro.
 
-Transforme logs de build confusos em evidências e próximos passos práticos.
-O acesso hospedado inclui **3 horas de teste grátis** por conta GitHub; depois,
-um patrocínio no GitHub Sponsors de **qualquer valor — mensal ativo ou único confirmado**.
+- Análise, diagnóstico com trecho de código informado pelo usuário, comparação, checklist e histórico local opcional.
+- Exportação Markdown/JSON, oito temas e idiomas PT/EN.
+- Frontend React/Vite diretamente no GitHub Pages, sem iframe ou gateway externo.
+- API própria Node.js 22 no Azure: contas, sessões, CSRF, OAuth direto do GitHub com PKCE e verificação de Sponsors.
+- PostgreSQL existente `rg-db-wallmarket.postgres.database.azure.com`, com TLS verificado e relatórios isolados por usuário. Logs completos ficam locais; o envio de um resumo revisado é explícito.
+- CLI local e GitHub Action para diagnosticar logs; o CLI raiz também verifica a configuração do repositório.
 
-## Prévia visual
-
-![DevRescue — transforme logs em um plano de correção](docs/media/preview.jpg)
-
-### Entrada e documentação
-
-![Bancada do DevRescue](docs/media/workbench.jpg)
-
-### Galeria de aparências
-
-![Checklist de ambiente do DevRescue](docs/media/checklist.jpg)
-
-Escolha **inglês ou português** no cabeçalho: navegação, status de acesso, documentação,
-diagnósticos e avisos seguem o idioma; evidências originais e comandos não são alterados.
-Escolha entre **Graphite, Dim, Midnight, Forest, Light, Mint, Rose ou Sandstone**.
-
-## Início rápido
+## Executar
 
 ```sh
-git clone https://github.com/brunnojob/devrescue.git
-cd devrescue
-node bin/devrescue.js analyze examples/build.log
+cd apps/web
+npm ci
+npm run dev
+npm test
+npm run build
+```
+
+O endereço local inclui `/devrescue/`. O CLI raiz usa Node 22 ou superior:
+
+```sh
+node bin/devrescue.js analyze examples/build.log --markdown
 node bin/devrescue.js doctor .
 ```
 
-Requer Node.js 22+. O núcleo não tem dependências externas.
+## Publicação
 
-## O que faz
+O workflow **GitHub Pages** publica o frontend. A API precisa de um App Service existente, das configurações privadas no Azure e da autorização OIDC para o workflow **Azure API**. Defina `DEVRESCUE_API_URL` nas variáveis do repositório para conectar a interface. Veja os passos exatos em [docs/AZURE.md](docs/AZURE.md).
 
-- **Remove segredos primeiro:** tokens, JWTs, cabeçalhos `Authorization`, senhas e chaves privadas.
-- **Detecta e agrupa** falhas de TypeScript, Python, npm, Docker, Git, PostgreSQL, rede e testes, com evidência e localização.
-- **Compara dois logs** e exporta relatórios JSON/Markdown só com texto sanitizado.
-- **Nunca executa** o texto colado ou comandos sugeridos — revise antes de rodar.
+A configuração do banco e os schemas foram preservados. Nenhuma migração remota é executada pelo deploy. A conectividade real deve ser verificada no runtime; um build verde não comprova conexão. Sem a URL da API, o acesso às contas informa que a configuração está pendente.
 
-Sincronização com conta é opcional e envia apenas um resumo sanitizado após sua aprovação explícita.
-As regras são heurísticas e não garantem resolver todo problema. Veja [limitações](docs/LIMITATIONS.md).
+GitHub Pages hospeda arquivos estáticos. Pro e Developer Program não transformam o Pages em servidor Node nem garantem créditos Azure. Nenhum recurso pago é criado automaticamente.
 
-Licença MIT · Apoie em [GitHub Sponsors](https://github.com/sponsors/brunnojob)
+O acesso hospedado mantém o teste de três horas por identidade GitHub e acesso de patrocinadores. O código e o CLI local continuam MIT. A remoção de segredos é baseada em padrões: revise os relatórios antes de compartilhar.

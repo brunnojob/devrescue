@@ -66,3 +66,4 @@ export function markdown(report) {
     `## ${safe(f.title)}`, `${f.location ? `${safe(f.location.file)}:${f.location.line} · ` : ''}Log line ${f.logLine} · ${f.occurrences} occurrence(s)`, '', `> ${safe(f.evidence)}`, '', safe(f.cause), '', ...f.steps.map(s=>`- ${safe(s)}`), ''
   ])].join('\n');
 }
+

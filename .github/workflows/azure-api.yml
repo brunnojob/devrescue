@@ -1,0 +1,55 @@
+name: Azure API
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency:
+  group: azure-api
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: azure-api
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify existing Azure deployment configuration
+        env:
+          CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+          SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          APP_NAME: ${{ vars.AZURE_WEBAPP_NAME }}
+        run: |
+          for setting in CLIENT_ID TENANT_ID SUBSCRIPTION_ID APP_NAME; do
+            if [[ -z "${!setting}" ]]; then
+              echo "::error::Configure ${setting} for the existing App Service; see docs/AZURE.md."
+              exit 1
+            fi
+          done
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - run: npm ci
+        working-directory: apps/web
+      - run: npm test && npm run api:build
+        working-directory: apps/web
+      - name: Install API runtime dependencies
+        run: npm install --omit=dev --no-audit --no-fund
+        working-directory: apps/web/api-dist
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          package: apps/web/api-dist
+      - name: Verify public API health
+        env:
+          API_URL: ${{ vars.DEVRESCUE_API_URL }}
+        run: |
+          test -n "$API_URL"
+          curl --fail --retry 8 --retry-delay 10 --retry-all-errors "${API_URL%/}/health"

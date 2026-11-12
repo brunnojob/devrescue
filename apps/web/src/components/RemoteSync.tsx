@@ -2,7 +2,7 @@ import { usePreferences } from "@/lib/preferences";
 import { useCallback, useEffect, useState } from "react";
 import { SyncTroubleshoot } from "./SyncTroubleshoot";
 import { Button } from "./ui/button";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api-client";
 import type { AnalysisResult } from "@/lib/analyzer";
 import { toSyncReport, type SyncReport } from "@/lib/sync-report";
 import {
@@ -68,8 +68,8 @@ export function RemoteSync({
         const r = await list$({ data: { csrf: s.csrf } });
         setReports(r.ok ? r.reports : []);
       } else setReports([]);
-    } catch {
-      setMsg(t("Could not reach the DevRescue server."));
+    } catch (error) {
+      setMsg(error instanceof Error ? error.message : t("Could not reach the DevRescue server."));
     }
   }, [status$, list$, accountOnly]);
   useEffect(() => {
@@ -93,7 +93,19 @@ export function RemoteSync({
 
   if (!status)
     return (
-      <div className="panel p-4 text-sm text-muted-foreground"> {t("Checking account sync…")} </div>
+      <div className="panel space-y-3 p-4 text-sm text-muted-foreground">
+        <p role="status">{t(msg) || t("Checking account sync…")}</p>
+        {msg && (
+          <Button
+            onClick={() => {
+              setMsg("");
+              void refresh();
+            }}
+          >
+            {t("Recheck")}
+          </Button>
+        )}
+      </div>
     );
   const csrf = status.csrf ?? "";
   return (

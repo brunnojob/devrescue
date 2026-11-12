@@ -10,7 +10,7 @@ const unb64 = (s: string) => {
   const bin = atob(s.replace(/-/g, "+").replace(/_/g, "/"));
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
 };
-export const ITERATIONS = 100_000; // edge runtime caps PBKDF2 at 100k
+export const ITERATIONS = 600_000; // Existing password hashes retain their stored iteration count.
 
 async function derive(password: string, salt: Uint8Array<ArrayBuffer>, iterations: number) {
   const key = await crypto.subtle.importKey("raw", enc.encode(password), "PBKDF2", false, [

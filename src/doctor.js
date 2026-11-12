@@ -72,3 +72,4 @@ export async function applyPatch(root, patch) {
   await writeFile(target,patch.after,{flag:present?'w':'wx'});
   return {file:target,backup:present?target+'.devrescue.backup':null};
 }
+

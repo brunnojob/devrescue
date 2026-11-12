@@ -1,7 +1,7 @@
 import logo from "@/assets/devrescue-logo.png";
 import { usePreferences } from "@/lib/preferences";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { useServerFn } from "@tanstack/react-start";
+import { useServerFn } from "@/lib/api-client";
 import { Clock, Github, Heart, RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
 import { RemoteSync } from "./RemoteSync";
@@ -137,7 +137,7 @@ export function AccessGate({ children, onLocked }: { children: ReactNode; onLock
         <Clock className="size-4 text-primary" />
         <strong>
           {!status
-            ? t("Checking access…")
+            ? t(message ? "Access verification unavailable." : "Checking access…")
             : status.state === "sponsor"
               ? t("Sponsor access")
               : status.state === "trial" && allowed
@@ -154,6 +154,20 @@ export function AccessGate({ children, onLocked }: { children: ReactNode; onLock
                           ? t("Sponsorship verification unavailable")
                           : t("Free trial ended")}
         </strong>
+        {status?.state === "trial" && allowed && status.expiresAt && (
+          <span className="text-muted-foreground">
+            {t("Expires")}:{" "}
+            {[
+              ["America/Sao_Paulo", "BR"],
+              ["America/New_York", "USA (ET)"],
+            ]
+              .map(
+                ([tz, label]) =>
+                  `${new Date(status.expiresAt as number).toLocaleString("en-GB", { timeZone: tz, day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })} ${label}`,
+              )
+              .join(" · ")}
+          </span>
+        )}
         {status?.githubLogin && (
           <span className="text-muted-foreground">@{status.githubLogin}</span>
         )}
