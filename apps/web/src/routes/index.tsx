@@ -12,6 +12,7 @@ import {
   type Severity,
 } from "@/lib/analyzer";
 import { SAMPLES } from "@/lib/samples";
+import { buildPlan, sourceExcerpt, sourceHints, type Diagnosis } from "@/lib/diagnosis";
 import { RemoteSync } from "@/components/RemoteSync";
 import { AccessGate } from "@/components/AccessGate";
 
@@ -197,7 +198,7 @@ function Analyze({
   run: (s?: string) => void;
   result: ReturnType<typeof analyze> | null;
 }) {
-  const { t } = usePreferences();
+  const { t, language } = usePreferences();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<Category | "all">("all");
   const [sev, setSev] = useState<Severity | "all">("all");
@@ -211,6 +212,8 @@ function Analyze({
           .includes(q.toLowerCase())),
   );
   const cats = [...new Set(result?.findings.map((f) => f.category) ?? [])];
+  const plan = useMemo(() => (result ? buildPlan(result) : null), [result]);
+  const byId = new Map(plan?.diagnoses.map((d) => [d.id, d]) ?? []);
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
       <div className="panel flex flex-col gap-3 p-4">
@@ -283,6 +286,32 @@ function Analyze({
           </div>
         ) : (
           <>
+            {plan?.nextAction && (
+              <section
+                aria-label={t("Next action")}
+                className="panel space-y-2 border-primary/50 p-4"
+              >
+                <div className="font-mono text-[10px] uppercase tracking-wider text-primary">
+                  {t("Next action")} · {t(plan.nextAction.finding.area)}
+                </div>
+                <p className="font-semibold">{t(plan.nextAction.step)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("Root cause")}: {translate(plan.nextAction.finding.title, language)}
+                  {plan.nextAction.finding.location ? ` · ${plan.nextAction.finding.location}` : ""}
+                  {plan.nextAction.finding.triggers.length > 0 &&
+                    ` · ${t("explains")} ${plan.nextAction.finding.triggers.length} ${t("other error(s)")}`}
+                </p>
+                <code className="block rounded bg-background px-2 py-1 font-mono text-xs text-primary">
+                  {t("Verify")}: $ {plan.nextAction.verify}
+                </code>
+                {plan.roots.length > 1 && (
+                  <p className="text-xs text-muted-foreground">
+                    {plan.roots.length}{" "}
+                    {t("independent problems found — fix them in the order below.")}
+                  </p>
+                )}
+              </section>
+            )}
             <div className="panel flex flex-wrap items-center gap-3 p-3 text-sm">
               <span className="font-mono">
                 <b className="text-primary">{result.findings.length}</b> {t("findings")}{" "}
@@ -351,7 +380,7 @@ function Analyze({
               </div>
             )}
             {list.map((f) => (
-              <FindingCard key={f.id} f={f} />
+              <FindingCard key={f.id} f={byId.get(f.id) ?? f} byId={byId} />
             ))}
             <details className="panel p-3 text-sm">
               <summary className="cursor-pointer text-muted-foreground">
@@ -369,8 +398,14 @@ function Analyze({
   );
 }
 
-function FindingCard({ f }: { f: Finding }) {
+function FindingCard({ f, byId }: { f: Finding | Diagnosis; byId: Map<string, Diagnosis> }) {
   const { t, language } = usePreferences();
+  const d = "fix" in f ? f : null;
+  const [source, setSource] = useState("");
+  const [showSource, setShowSource] = useState(false);
+  const hints = d && source ? sourceHints(d, source) : [];
+  const excerpt = d?.line && source ? sourceExcerpt(source, d.line) : [];
+  const cause = d?.causedBy ? byId.get(d.causedBy) : undefined;
   const [copied, setCopied] = useState<number | null>(null);
   const copy = (c: string, i: number) => {
     navigator.clipboard?.writeText(c);
@@ -397,10 +432,76 @@ function FindingCard({ f }: { f: Finding }) {
       {f.location && (
         <div className="font-mono text-xs text-accent-foreground">📍 {f.location}</div>
       )}
+      {cause && (
+        <p className="rounded border border-border bg-secondary px-2 py-1 text-xs">
+          ↳ {t("Probably caused by")} <b>{translate(cause.title, language)}</b>{" "}
+          {t("— fix that first.")}
+        </p>
+      )}
+      {d && d.triggers.length > 0 && (
+        <p className="rounded border border-primary/40 bg-primary/10 px-2 py-1 text-xs">
+          {t("Root cause: explains")}{" "}
+          {d.triggers.map((id) => translate(byId.get(id)?.title ?? "", language)).join(", ")}
+        </p>
+      )}
       <p className="text-sm text-muted-foreground">{t(f.explanation)}</p>
       <pre className="overflow-x-auto rounded bg-background p-2 font-mono text-xs">
-        {f.evidence.join("\n")}
+        {d && d.snippet.length ? d.snippet.join("\n") : f.evidence.join("\n")}
       </pre>
+      {d && d.fix.length > 0 && (
+        <div className="space-y-1">
+          <div className="font-mono text-[10px] uppercase text-muted-foreground">{t("Fix")}</div>
+          <ol className="list-decimal space-y-1 pl-5 text-sm">
+            {d.fix.map((x, i) => (
+              <li key={i}>{t(x)}</li>
+            ))}
+          </ol>
+        </div>
+      )}
+      {d?.verify && (
+        <div className="font-mono text-xs">
+          <span className="text-muted-foreground">{t("Verify")}: </span>
+          <code className="text-primary">$ {d.verify}</code>
+        </div>
+      )}
+      {d && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setShowSource((v) => !v)}
+            className="text-xs text-muted-foreground underline hover:text-primary"
+          >
+            {d.file
+              ? `${t("Add the involved file for an exact fix")} (${d.file})`
+              : t("Add the involved file for an exact fix")}
+          </button>
+          {showSource && (
+            <>
+              <input
+                type="file"
+                aria-label={t("Upload source file")}
+                className="block text-xs"
+                onChange={(e) => void e.target.files?.[0]?.text().then(setSource)}
+              />
+              <textarea
+                value={source}
+                onChange={(e) => setSource(e.target.value)}
+                placeholder={t("…or paste the file content. It stays in your browser.")}
+                className="h-28 w-full rounded border border-border bg-background p-2 font-mono text-xs"
+              />
+              {excerpt.length > 0 && (
+                <pre className="overflow-x-auto rounded bg-background p-2 font-mono text-xs">
+                  {excerpt.join("\n")}
+                </pre>
+              )}
+              {hints.map((h, i) => (
+                <p key={i} className="text-sm">
+                  → {h}
+                </p>
+              ))}
+            </>
+          )}
+        </div>
+      )}
       <div className="space-y-1">
         {f.commands.map((c, i) => (
           <div

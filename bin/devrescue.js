@@ -30,3 +30,4 @@ try {
     } else console.log(JSON.stringify(report,null,2));
   } else throw new Error(`Unknown command: ${command}`);
 } catch(error) {console.error(`DevRescue: ${error.message}`);process.exitCode=2;}
+

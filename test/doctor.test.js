@@ -20,3 +20,4 @@ test('doctor refuses symlinked sensitive files',async t=>{
  const root=await mkdtemp(path.join(os.tmpdir(),'devrescue-'));
  try{await symlink('/etc/passwd',path.join(root,'.env.example'));await assert.rejects(()=>doctor(root),/Symlink/);}finally{await rm(root,{recursive:true,force:true});}
 });
+

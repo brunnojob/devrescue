@@ -9,7 +9,7 @@ type State =
   | "schema_incompatible"
   | "ready";
 
-const SECRETS = "project name (top left) → Settings → Secrets";
+const SECRETS = "Azure API → Configuration → Application settings";
 const STATE_HELP: Record<
   Exclude<State, "ready" | "unreachable">,
   { title: string; cause: string; steps: string[] }
@@ -17,7 +17,7 @@ const STATE_HELP: Record<
   not_configured: {
     title: "Not configured",
     cause: "No database connection setting exists on the server. History stays in this browser.",
-    steps: [`Add DATABASE_URL in Lovable: ${SECRETS}. Never paste it in chat.`],
+    steps: [`Add DATABASE_URL in the Azure API settings: ${SECRETS}. Never paste it in chat.`],
   },
   misconfigured: {
     title: "Connection setting rejected",

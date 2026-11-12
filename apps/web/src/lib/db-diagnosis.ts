@@ -38,7 +38,7 @@ export interface Diagnosis {
 }
 
 const SECRET_STEP =
-  "Update the value in Lovable: project name (top left) → Settings → Secrets. Never paste it in chat.";
+  "Update the value in the Azure API settings: Azure API → Configuration → Application settings. Never paste it in chat.";
 
 export const DIAGNOSES: Record<DbErrorKind, Diagnosis> = {
   timeout: {

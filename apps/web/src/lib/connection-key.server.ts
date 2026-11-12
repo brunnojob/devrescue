@@ -1,6 +1,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 function key() {
-  const value = process.env["APP_USER_CONNECTION_KEY_SECRET"];
+  const value =
+    process.env["TOKEN_ENCRYPTION_KEY"] || process.env["APP_USER_CONNECTION_KEY_SECRET"];
   if (!value) throw new Error("GitHub configuration unavailable");
   const decoded = Buffer.from(value, "base64");
   if (decoded.length !== 32) throw new Error("GitHub configuration unavailable");

@@ -1,7 +1,16 @@
 // Deterministic, client-side log analyzer. Never executes anything.
 export type Severity = "critical" | "error" | "warning";
 export type Category =
-  "typescript" | "python" | "npm" | "system" | "docker" | "database" | "git" | "network" | "tests";
+  | "typescript"
+  | "python"
+  | "npm"
+  | "system"
+  | "docker"
+  | "database"
+  | "git"
+  | "network"
+  | "tests"
+  | "ci";
 export interface Finding {
   id: string;
   ruleId: string;
@@ -81,7 +90,8 @@ const RULES: Rule[] = [
     category: "typescript",
     severity: "error",
     confidence: 0.95,
-    pattern: /([\w./\\-]+\.(?:tsx?|mts|cts))[(:](\d+)[,:](\d+)\)?:?\s*-?\s*error\s+(TS\d+):\s*(.+)/,
+    pattern:
+      /(?<![\w./\\-])([\w./\\-]+\.(?:tsx?|mts|cts))[(:](\d+)[,:](\d+)\)?:?\s*-?\s*error\s+(TS\d+):\s*(.+)/,
     location: (m) => `${m[1]}:${m[2]}:${m[3]}`,
     key: (m) => `${m[1]}:${m[2]}:${m[4]}`,
     explanation:
@@ -326,6 +336,60 @@ const RULES: Rule[] = [
     location: (m) => m[3],
     explanation: "One or more automated tests failed. Inspect the first failing assertion.",
     commands: ["npx vitest run <file>", "npx jest <file> --verbose", "pytest -x -vv"],
+  },
+  {
+    id: "node-missing-module",
+    title: "Node module not found",
+    category: "npm",
+    severity: "error",
+    confidence: 0.9,
+    pattern:
+      /(?:Error: )?Cannot find module ['"]([^'"]+)['"]|Module not found: (?:Error: )?Can't resolve ['"]([^'"]+)['"]/,
+    key: (m) => m[1] || m[2],
+    location: (m) => `module ${m[1] || m[2]}`,
+    explanation:
+      "Node or the bundler could not resolve an import. The package is not installed, or a relative path/extension is wrong.",
+    commands: ["npm ls <package>", "npm install", "ls node_modules/<package>"],
+  },
+  {
+    id: "eacces",
+    title: "Permission denied (EACCES)",
+    category: "system",
+    severity: "error",
+    confidence: 0.85,
+    pattern: /EACCES[^\n]*?(?:open|mkdir|scandir|access)?\s*'?([^'\s]*)'?/,
+    key: () => "x",
+    explanation:
+      "The process lacks permission to read or write a path — often a global npm prefix or a root-owned cache.",
+    commands: ["ls -ld <path>", "npm config get prefix", "id"],
+    warnings: ["Avoid `sudo npm install`; fix ownership or use a user-level prefix instead."],
+  },
+  {
+    id: "env-missing",
+    title: "Missing environment variable",
+    category: "system",
+    severity: "error",
+    confidence: 0.85,
+    pattern:
+      /(?:Missing (?:required )?(?:environment|env) variable[:\s]*['"`]?([A-Z][A-Z0-9_]+)|([A-Z][A-Z0-9_]{2,}) (?:is not set|is not defined|must be set|is required))/,
+    key: (m) => m[1] || m[2],
+    location: (m) => `env ${m[1] || m[2]}`,
+    explanation:
+      "The program expected a configuration variable that is not set in this shell, .env file or CI secret store.",
+    commands: ['printenv | grep -c "^<NAME>="', "cat .env.example"],
+  },
+  {
+    id: "ci-exit",
+    title: "CI step failed",
+    category: "ci",
+    severity: "warning",
+    confidence: 0.7,
+    pattern:
+      /Process completed with exit code (\d+)|ERROR: Job failed: exit code (\d+)|##\[error\]/,
+    key: () => "x",
+    explanation:
+      "The CI runner stopped because a step exited non-zero. The real cause is the first error printed before this line.",
+    commands: ["npm ci && npm test", "act -j <job>   # run the workflow locally"],
   },
 ];
 

@@ -25,3 +25,4 @@ test('comparison identifies added, absent and recurring signatures',()=>{
  const r=compare(analyze('EADDRINUSE\nENOSPC'),analyze('EADDRINUSE\nOOMKilled'));
  assert.equal(r.added[0].id,'memory');assert.equal(r.resolved[0].id,'disk');assert.equal(r.recurring[0].id,'port');
 });
+

@@ -4,7 +4,7 @@ import { COLUMNS_SQL } from "./schema-check";
 import { accessSchemaState } from "./access-schema";
 import { decideAccess, sponsorshipDecision, SPONSOR_FRESH_MS } from "./access-policy";
 import { decryptConnectionKey, encryptConnectionKey } from "./connection-key.server";
-import { callAsAppUser } from "@/integrations/lovable/appUserConnector";
+import { callAsAppUser } from "../../api/github";
 export async function accessInstalled(q: Q) {
   return accessSchemaState(await q(COLUMNS_SQL)) === "compatible";
 }

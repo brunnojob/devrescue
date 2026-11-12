@@ -77,3 +77,4 @@ runs:
         # pipefail preserves the analyzer's failure exit code when using tee.
         node "${options[@]}" \
           | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"
+
