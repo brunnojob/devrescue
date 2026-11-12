@@ -89,7 +89,6 @@
   "Optional account sync": "Sincronização opcional",
   "Analysis always runs in your browser. If the server has database credentials and the DevRescue tables are installed, you can sign in and explicitly upload a sanitized summary (findings and short redacted evidence — never the log itself). The server re-redacts it, stores it per account, and lets you delete it. Database credentials live only on the server; the History tab shows the real server state.": "A análise sempre ocorre no navegador. Com a conexão e as tabelas prontas, você pode entrar e enviar explicitamente um resumo sanitizado, com resultados e evidências curtas — nunca o log completo. O servidor sanitiza novamente e guarda por conta, permitindo exclusão. Credenciais ficam apenas no servidor; o Histórico mostra o estado real.",
   "Hosted trial & sponsorship": "Teste grátis e patrocínio",
-  "Sign in and connect your GitHub account to start three hours of free access. After the trial, any monthly active sponsorship or confirmed one-time GitHub Sponsors payment to @brunnojob unlocks hosted access. Clearing browser data does not restart the trial. The GitHub Pages entry opens the separately hosted tool; account credentials and sponsorship verification stay on the server. The open-source analyzer remains available under the MIT license.": "Entre e conecte seu GitHub para iniciar três horas grátis. Após o teste, um patrocínio mensal ativo ou pagamento único confirmado de qualquer valor para @brunnojob libera acesso. Limpar o navegador não reinicia o teste. O GitHub Pages abre a ferramenta hospedada separadamente; credenciais e verificação ficam no servidor. O analisador de código aberto permanece sob licença MIT.",
   "Contribute": "Contribua",
   "Rules live in": "As regras estão em",
   "with tests beside them. Source:": "com testes ao lado. Código:",
@@ -307,5 +306,6 @@
   "ci": "CI",
   "runtime": "execução",
   "API endpoint is not configured. Set the public API URL in the Pages deployment settings.": "A API ainda não foi configurada. Defina a URL pública da API nas configurações de publicação do Pages.",
-  "The API endpoint must use HTTPS.": "O endereço da API deve usar HTTPS."
+  "The API endpoint must use HTTPS.": "O endereço da API deve usar HTTPS.",
+  "Sign in and connect your GitHub account to start three hours of free access. After the trial, any monthly active sponsorship or confirmed one-time GitHub Sponsors payment to @brunnojob unlocks hosted access. Clearing browser data does not restart the trial. The interface runs directly on GitHub Pages; account credentials and sponsorship verification stay in the Azure API. The open-source analyzer remains available under the MIT license.": "Entre e conecte seu GitHub para iniciar três horas grátis. Após o teste, um patrocínio mensal ativo ou pagamento único confirmado de qualquer valor para @brunnojob libera acesso. Limpar o navegador não reinicia o teste. A interface roda diretamente no GitHub Pages; credenciais e verificação de patrocínio ficam na API do Azure. O analisador de código aberto permanece sob licença MIT."
 }

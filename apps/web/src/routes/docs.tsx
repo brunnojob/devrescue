@@ -86,7 +86,7 @@ function Docs() {
         <S t={t("Hosted trial & sponsorship")}>
           {" "}
           {t(
-            "Sign in and connect your GitHub account to start three hours of free access. After the trial, any monthly active sponsorship or confirmed one-time GitHub Sponsors payment to @brunnojob unlocks hosted access. Clearing browser data does not restart the trial. The GitHub Pages entry opens the separately hosted tool; account credentials and sponsorship verification stay on the server. The open-source analyzer remains available under the MIT license.",
+            "Sign in and connect your GitHub account to start three hours of free access. After the trial, any monthly active sponsorship or confirmed one-time GitHub Sponsors payment to @brunnojob unlocks hosted access. Clearing browser data does not restart the trial. The interface runs directly on GitHub Pages; account credentials and sponsorship verification stay in the Azure API. The open-source analyzer remains available under the MIT license.",
           )}{" "}
         </S>
         <S t={t("Contribute")}>
