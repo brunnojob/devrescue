@@ -67,12 +67,13 @@ runs:
           exit 1
         fi
 
-        options=()
+        # Keep the argument list non-empty for Bash 3.2 with nounset on macOS.
+        options=("$cli_path" analyze "$log_path" --markdown)
         if [[ "$DEVRESCUE_FAIL" == 'true' ]]; then
           options+=(--fail-on-findings)
         fi
 
         # Append only the CLI's sanitized Markdown output, never the raw log.
         # pipefail preserves the analyzer's failure exit code when using tee.
-        node "$cli_path" analyze "$log_path" --markdown "${options[@]}" \
+        node "${options[@]}" \
           | tee -a "${GITHUB_STEP_SUMMARY:-/dev/null}"
